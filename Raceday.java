@@ -12,6 +12,7 @@ public class Raceday{
 
 	private String track;
 	private int    date;
+    private Connection conn;
 
 	public String getTrack() {
 		return track;
@@ -20,6 +21,10 @@ public class Raceday{
 	public int getDate() {
 		return date;
 	}
+
+    public int maxRace() {
+        return SQLite.getMaxRace(conn);
+    }
 
     public Raceday (Connection conn) {
         String sql = "SELECT date, track FROM t_horse WHERE race = 1 and postPos = 1"; //Same track and day for any horse and race
@@ -31,6 +36,7 @@ public class Raceday{
                 this.date = rs.getInt("date");
                 this.track = rs.getString("track");
             }
+            this.conn = conn;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }

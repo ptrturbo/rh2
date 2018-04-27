@@ -13,16 +13,15 @@ public class B {
 		String csvFile = "/home/greg/hr/SAX0408.DRF";
 
 		boolean newDay = true;
-        boolean maiden = false;
-        boolean turf   = false;
+        int raceNum = 0;
+        int maxRace = 0;
+        int maxPost = 0;
+        int maxHist = 0;
 		int	currRace = 0;
-        int distance = 0;
         int postPos = 0;
         int lStarts = 0;
         int today = 0;
-        String raceType = "";
         String jockey = "";
-        Raceday raceDay = null;
         double[] fastestFraction = new double[2];
 
         // Create the in-memory database and tables
@@ -36,13 +35,29 @@ public class B {
         // Load the CSV file into the database
         SQLite.loadCSV(conn, csvFile);
 
-        raceDay = new Raceday (conn);
+        Raceday raceDay = new Raceday (conn);
         System.out.println ("Racing on " + raceDay.getDate() + " at " + raceDay.getTrack());	
 
-        int maxRace = SQLite.getMaxRace(conn);
-        for (int race=1; race<=maxRace; race++) {
-            int maxPost = SQLite.getMaxPost(conn, race);
-            System.out.println("Race " + race + "  max post " + maxPost);
-        }
+        // For every race
+        for (raceNum=1; raceNum<=raceDay.maxRace(); raceNum++) {
+            Race race = new Race(conn, raceNum);
+            maxPost = race.maxPost();
+            System.out.println("Race " + raceNum + "  max post " + maxPost);
+
+            System.out.println("  Distance " + race.distance() + "  Surface " + race.surface() + "  Type " + race.raceType());
+            if (race.isMaiden()) {System.out.println("    Maiden");}
+            if (race.isTurf()) {System.out.println("    Turf");}
+
+            // for every post position in the race
+            for (postPos=1; postPos<=race.maxPost(); postPos++) {
+                Horse horse = new Horse(conn, raceNum, postPos);
+
+                for (int histRace=1; histRace<=horse.maxHist(); histRace++) {
+                    PastPerf pp = new PastPerf(conn, raceNum, postPos, histRace);
+                } // for histRace ... maxHist
+
+            } // for postPos ... maxPostPos
+
+        } // for raceNum ... maxRace
     }
 }

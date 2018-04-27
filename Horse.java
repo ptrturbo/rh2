@@ -2,11 +2,14 @@
  * The Horse object contains data specific to a horse for a particular race
  */
 
-import java.util.List;
-import static utils.CSVUtils.getInt;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 public class Horse {
 
+    private Connection conn;
 	private int postPos;
 	private String trainer;
 	private int trainerSts;
@@ -20,10 +23,7 @@ public class Horse {
 	private int tPlaces;
 	private int tShows;
 	private int lStarts;
-
-	public int getPostPos() {
-		return postPos;
-	}
+    private int raceNum;
 
 	public String getTrainer() {
 		return trainer;
@@ -72,6 +72,10 @@ public class Horse {
 	public int getLStarts() {
 		return lStarts;
 	}
+
+    public int maxHist () {
+        return SQLite.getMaxHist(conn, raceNum, postPos);
+    }
 
 /*
  * Rate the quality of the horse for turf races
@@ -191,19 +195,36 @@ public class Horse {
 /*
  * Horse constructor
  */
-	public Horse (List<String> line) {
-		this.postPos     = getInt(line.get(3));
-		this.trainer     = line.get(27);
-		this.trainerSts  = getInt(line.get(1146)); 
-		this.trainerWins = getInt(line.get(1147)); 
-		this.jockey      = line.get(32);
-		this.jockeySts   = getInt(line.get(1156)); //Current year. Could use current meet (field 35) or prior year (1162) instead
-		this.jockeyWins  = getInt(line.get(1157)); //Same for Wins
-		this.name        = line.get(44);
-		this.tStarts     = getInt(line.get(74));
-		this.tWins       = getInt(line.get(75));
-		this.tPlaces     = getInt(line.get(76));
-		this.tShows      = getInt(line.get(77));
-		this.lStarts     = getInt(line.get(96));
-	}
+    public Horse (Connection conn, int raceNum, int postPos) {
+        String sql = "SELECT trainer, trainerSts, trainerWins, jockey, jockeySts, jockeyWins, " +
+                     "name, tStarts, tWins, tPlaces, tShows, lstarts " +
+                     "FROM t_horse WHERE race = ? and postPos = ?"; 
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt (1, raceNum);
+            pstmt.setInt (2, postPos);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                this.trainer     = rs.getString("trainer");
+		        this.trainerSts  = rs.getInt("trainerSts");
+		        this.trainerWins = rs.getInt("trainerWins");
+		        this.jockey      = rs.getString("jockey");
+		        this.jockeySts   = rs.getInt("jockeySts"); 
+		        this.jockeyWins  = rs.getInt("jockeyWins");
+		        this.name        = rs.getString("name");
+		        this.tStarts     = rs.getInt("tStarts");
+		        this.tWins       = rs.getInt("tWins");
+		        this.tPlaces     = rs.getInt("tPlaces");
+		        this.tShows      = rs.getInt("tShows");
+		        this.lStarts     = rs.getInt("lStarts");
+            }
+            this.conn    = conn;
+            this.raceNum = raceNum;
+            this.postPos = postPos;
+
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
 }

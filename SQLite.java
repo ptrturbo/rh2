@@ -545,6 +545,33 @@ public class SQLite {
         return maxPost;
     }
 
+    public static int getMaxHist (Connection conn, int race, int postPos) {
+        String sql = "SELECT distance FROM t_last10 WHERE race = ? and todaysPostPos = ?";
+        int maxHist = 0;
+        int distance = 0;
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt (1, race);
+            pstmt.setInt (2, postPos);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                distance = rs.getInt("distance");
+                if (distance != 0) {
+                    maxHist++;
+                }
+                else {
+                    break;
+                }
+            }
+
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+        return maxHist;
+    }
+
     /*
      * The database doesn't support boolean, so convert between boolean and int
      */

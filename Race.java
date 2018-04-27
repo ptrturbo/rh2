@@ -3,43 +3,48 @@
  * such as distance, race number, and surface.
  */
 
-import java.util.List;
-import static utils.CSVUtils.getInt;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 public class Race{
 
-	private int raceNumber;
 	private int distance;
     private int purse;
     private int claimingPrice;
+    private int raceNum;
 	private String surface;
 	private String raceType;
+    private Connection conn;
 	
-
-	public int getRaceNumber() {
-		return raceNumber;
-	}
-
-	public int getDistance() {
+	public int distance() {
 		return distance;
 	}
 
-	public String getSurface() {
+	public String surface() {
 		return surface;
 	}
 
-	public String getRaceType() {
+	public String raceType() {
 		return raceType;
 	}
 
-    public int getPurse() {
+    public int purse() {
         return purse;
     }
 
-    public int getClaimingPrice() {
+    public int raceNum() {
+        return raceNum;
+    }
+
+    public int claimingPrice() {
         return claimingPrice;
     }
 
+    public int maxPost() {
+        return SQLite.getMaxPost(conn, raceNum);
+    }
 
     public boolean isMaiden() {
         boolean maiden = false;
@@ -51,12 +56,36 @@ public class Race{
         return maiden;
     }
 
-	public Race (List<String> line) {
-		this.raceNumber = getInt(line.get(2));
-		this.distance   = getInt(line.get(5));
-		this.surface    = line.get(6);
-		this.raceType   = line.get(8);
-        this.purse      = getInt(line.get(11));
-        this.claimingPrice = getInt(line.get(12));
+    public boolean isTurf() {
+        boolean turf = false;
+        if (surface.toUpperCase().equals("T")) {
+            turf = true;
+        }
+        return turf;
+    }
+
+    /*
+     * Constructor
+     */
+	public Race (Connection conn, int raceNum) {
+        String sql = "SELECT distance, surface, raceType, purse, claimingPrice " +
+                     "FROM t_horse WHERE race = ? and postPos = 1"; //Same info for any horse in the race 
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, raceNum);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                this.distance      = rs.getInt("distance");
+                this.surface       = rs.getString("surface");
+                this.raceType      = rs.getString("raceType");
+                this.purse         = rs.getInt("purse");
+                this.claimingPrice = rs.getInt("claimingPrice");
+            }
+            this.raceNum = raceNum;
+            this.conn    = conn;
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
 	}
 }
