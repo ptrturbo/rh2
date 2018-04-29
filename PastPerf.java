@@ -3,7 +3,10 @@
  * This will return arrays of the past performance data.
  */
 
-import java.util.List;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import utils.AlgoUtils;
 import static utils.CSVUtils.getInt;
 import static utils.CSVUtils.getDouble;
@@ -11,6 +14,9 @@ import org.apache.commons.lang3.StringUtils;
 
 public class PastPerf {
 
+    private Connection conn;
+    private int      raceNum;
+	private int      postPos;
 	private int[]    ppRaceDate    = new int[10];
 	private int[]    ppDistance    = new int[10];
     private int[]    ppPurse       = new int[10];
@@ -38,99 +44,8 @@ public class PastPerf {
 	private double[] pp16fFraction = new double[10];
 	private double[] ppFinalTime   = new double[10];
 	private String[] ppJockey      = new String[10];
+	private String[] ppTrainer     = new String[10];
 	private String[] ppRaceType    = new String[10];
-
-	public int[] getRaceDate() {
-		return ppRaceDate;
-	}
-
-	public int[] getDistance() {
-		return ppDistance;
-	}
-
-	public String[] getTrack() {
-		return ppTrack;
-	}
-
-	public String[] getSurface() {
-		return ppSurface;
-	}
-
-	public String[] get1stCallPos() {
-		return pp1stCallPos;
-	}
-
-	public String[] get2ndCallPos() {
-		return pp2ndCallPos;
-	}
-
-	public String[] getGateCallPos() {
-		return ppGateCallPos;
-	}
-
-	public String[] getStretchPos() {
-		return ppStretchPos;
-	}
-
-	public String[] getFinishPos() {
-		return ppFinishPos;
-	}
-
-	public double[] get1stCallBtn() {
-		return pp1stCallBtn;
-	}
-
-	public double[] get2ndCallBtn() {
-		return pp2ndCallBtn;
-	}
-
-	public double[] getStretchBtn() {
-		return ppStretchBtn;
-	}
-
-	public double[] getFinishBtn() {
-		return ppFinishBtn;
-	}
-
-	public int[] getSpeedRating() {
-		return ppSpeedRating;
-	}
-
-	public double[] get2fFraction() {
-		return pp2fFraction;
-	}
-
-	public double[] get4fFraction() {
-		return pp4fFraction;
-	}
-
-	public double[] get6fFraction() {
-		return pp6fFraction;
-	}
-
-	public double[] get8fFraction() {
-		return pp8fFraction;
-	}
-
-	public double[] get10fFraction() {
-		return pp10fFraction;
-	}
-
-	public double[] get12fFraction() {
-		return pp12fFraction;
-	}
-
-	public double[] get14fFraction() {
-		return pp14fFraction;
-	}
-
-	public double[] get16fFraction() {
-		return pp16fFraction;
-	}
-
-	public double[] getFinalTime() {
-		return ppFinalTime;
-	}
 
 	public String[] getJockey() {
 		return ppJockey;
@@ -148,6 +63,9 @@ public class PastPerf {
 		return ppHighClaimingPrice;
 	}
 
+/*
+ * Has Raced Before
+ */
     public boolean hasRacedBefore() {
     	boolean racedBefore = false;
     	if (ppDistance[0] != 0) {
@@ -703,36 +621,59 @@ public class PastPerf {
 /*
  * Constructor
  */
-	public PastPerf (List<String> line) {
-		for (int i=0; i<10; i++) {
-			this.ppRaceDate[i]    = getInt(line.get(255 + i));
-            this.ppTrack[i]       = line.get(275 + i);
-			this.ppDistance[i]    = getInt(line.get(315 + i));
-			this.ppSurface[i]     = line.get(325 + i);
-            this.ppOdds[i]        = getDouble(line.get(515+i));
-            this.ppPurse[i]       = getInt(line.get(555+i));
-			this.pp1stCallPos[i]  = line.get(575 + i);
-			this.pp2ndCallPos[i]  = line.get(585 + i);
-			this.ppGateCallPos[i] = line.get(595 + i);
-			this.ppStretchPos[i]  = line.get(605 + i);
-			this.ppFinishPos[i]   = line.get(615 + i);
-			this.pp1stCallBtn[i]  = getDouble(line.get(665 + i));
-			this.pp2ndCallBtn[i]  = getDouble(line.get(685 + i));
-			this.ppStretchBtn[i]  = getDouble(line.get(725 + i));
-			this.ppFinishBtn[i]   = getDouble(line.get(745 + i));
-            this.ppSpeedRating[i] = getInt(line.get(845 + i));  //Using BRIS speed rating
-			this.pp2fFraction[i]  = getDouble(line.get(875 + i));
-			this.pp4fFraction[i]  = getDouble(line.get(895 + i));
-			this.pp6fFraction[i]  = getDouble(line.get(915 + i));
-			this.pp8fFraction[i]  = getDouble(line.get(935 + i));
-			this.pp10fFraction[i] = getDouble(line.get(945 + i));
-			this.pp12fFraction[i] = getDouble(line.get(955 + i));
-			this.pp14fFraction[i] = getDouble(line.get(965 + i));
-			this.pp16fFraction[i] = getDouble(line.get(975 + i));
-			this.ppFinalTime[i]   = getDouble(line.get(1035 + i));
-			this.ppJockey[i]      = line.get(1065 + i);
-			this.ppRaceType[i]    = line.get(1085 + i);
-            this.ppHighClaimingPrice[i] = getInt(line.get(1211+i));
-		}
+	public PastPerf (Connection conn, int raceNum, int postPos) {
+        String sql = "SELECT ppRaceDate, ppTrack, ppDistance, ppSurface, ppOdds, " +
+                     "ppPurse, pp1stCallPos, pp2ndCallPos, ppGateCallPos, ppStretchPos, ppFinishPos, " +
+                     "pp1stCallBtn, pp2ndCallBtn, ppStretchBtn, ppFinishBtn, ppSpeedRating, " +
+                     "pp2fFraction, pp4fFraction, pp6fFraction, pp8fFraction, pp10fFraction, " +
+                     "pp12fFraction, pp14fFraction, pp16fFraction, ppFinalTime, ppJockey, " +
+                     "ppRaceType, ppHighClaimingPrice " +
+                     "FROM t_last10 WHERE race = ? and postPos = ? and ppRace = ?"; 
+        for (int ppRace=0; ppRace<10; ppRace++) {
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setInt (1, raceNum);
+                pstmt.setInt (2, postPos);
+                pstmt.setInt (3, ppRace);
+                ResultSet rs = pstmt.executeQuery();
+    
+                while (rs.next()) {
+                    this.ppTrainer[ppRace]           = rs.getString("trainer");
+                    this.ppRaceDate[ppRace]          = rs.getInt("ppRaceDate");
+                    this.ppTrack[ppRace]             = rs.getString("ppTrack");
+                    this.ppDistance[ppRace]          = rs.getInt("ppDistance");
+                    this.ppSurface[ppRace]           = rs.getString("ppSurface");
+                    this.ppOdds[ppRace]              = rs.getDouble("ppOdds");
+                    this.ppPurse[ppRace]             = rs.getInt("ppPurse");
+                    this.pp1stCallPos[ppRace]        = rs.getString("pp1stCallPos");
+                    this.pp2ndCallPos[ppRace]        = rs.getString("pp2ndCallPos");
+                    this.ppGateCallPos[ppRace]       = rs.getString("ppGateCallPos");
+                    this.ppStretchPos[ppRace]        = rs.getString("ppStretchCallPos");
+                    this.ppFinishPos[ppRace]         = rs.getString("ppFinishPos");
+                    this.pp1stCallBtn[ppRace]        = rs.getDouble("pp1stCallBtn");
+                    this.pp2ndCallBtn[ppRace]        = rs.getDouble("pp2ndCallBtn");
+                    this.ppStretchBtn[ppRace]        = rs.getDouble("ppStretchBtn");
+                    this.ppFinishBtn[ppRace]         = rs.getDouble("ppFinishBtn");
+                    this.ppSpeedRating[ppRace]       = rs.getInt("SpeedRating");
+                    this.pp2fFraction[ppRace]        = rs.getDouble("pp2fFraction");
+                    this.pp4fFraction[ppRace]        = rs.getDouble("pp4fFraction");
+                    this.pp6fFraction[ppRace]        = rs.getDouble("pp6fFraction");
+                    this.pp8fFraction[ppRace]        = rs.getDouble("pp8fFraction");
+                    this.pp10fFraction[ppRace]       = rs.getDouble("pp10fFraction");
+                    this.pp12fFraction[ppRace]       = rs.getDouble("pp12fFraction");
+                    this.pp14fFraction[ppRace]       = rs.getDouble("pp14fFraction");
+                    this.pp16fFraction[ppRace]       = rs.getDouble("pp16fFraction");
+                    this.ppFinalTime[ppRace]         = rs.getDouble("ppFinalTime");
+                    this.ppJockey[ppRace]            = rs.getString("Jockey");
+                    this.ppRaceType[ppRace]          = rs.getString("ppRaceType");
+                    this.ppHighClaimingPrice[ppRace] = rs.getInt("ppHighClaimingPrice");
+                }
+                this.conn    = conn;
+                this.raceNum = raceNum;
+                this.postPos = postPos;
+    
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+            }
+        }
 	}
 }

@@ -82,7 +82,7 @@ public class SQLite {
         
         String sql = "CREATE TABLE t_last10 (\n"
             + " id integer PRIMARY KEY,\n"
-            + " idx integer,\n"  
+            + " ppRace integer,\n"  
             + " race integer,\n"
             + " todaysPostPos integer,\n"
             + " date text,\n"
@@ -322,8 +322,8 @@ public class SQLite {
     /*
      * Insert data into the Last 10 table
      */
-    public static void insertLast10 (Connection conn, List<String> line, int idx) {
-        String sql = "INSERT INTO t_last10 (id, idx, race, todaysPostPos, date, " +
+    public static void insertLast10 (Connection conn, List<String> line, int ppRace) {
+        String sql = "INSERT INTO t_last10 (id, ppRace, race, todaysPostPos, date, " +
                      "track, distance, surface, postPos, claimingPrice, purse, " +
                      "pp1stCallPos, pp2ndCallPos, gateCallPos, stretchPos, finishPos, " +
                      "pp1stCallBtn, pp2ndCallBtn, stretchBtn, finishBtn, pp2fFraction, " +
@@ -332,36 +332,36 @@ public class SQLite {
                      "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            pstmt.setInt   (1, getInt(line.get(2)) * 1000 + getInt(line.get(3))*10 + idx); //race*1000 + postPos*100 + index
-            pstmt.setInt   (2, idx);                           //index
-            pstmt.setInt   (3, getInt(line.get(2)));             //race 
-            pstmt.setInt   (4, getInt(line.get(3)));             //today's postPos
-            pstmt.setString(5, line.get(255+idx));             //date
-            pstmt.setString(6, line.get(275+idx));             //track
-            pstmt.setInt   (7, getInt(line.get(315+idx)));     //distance
-            pstmt.setString(8, line.get(325+idx));             //surface);
-            pstmt.setInt   (9, getInt(line.get(355+idx)));     //postPos
-            pstmt.setInt   (10, getInt(line.get(545+idx)));    //claimingPrice
-            pstmt.setInt   (11, getInt(line.get(555+idx)));    //purse
-            pstmt.setString(12, line.get(575+idx));            //pp1stCallPos
-            pstmt.setString(13, line.get(585+idx));            //pp2ndCallPos
-            pstmt.setString(14, line.get(595+idx));            //gateCallPos
-            pstmt.setString(15, line.get(605+idx));            //stretchPos
-            pstmt.setString(16, line.get(615+idx));            //finishPos
-            pstmt.setString(17, line.get(665+idx));            //pp1stCallBtn
-            pstmt.setString(18, line.get(685+idx));            //pp2ndCallBtn
-            pstmt.setString(19, line.get(725+idx));            //stretchBtn
-            pstmt.setString(20, line.get(745+idx));            //finishBtn
-            pstmt.setDouble(21, getDouble(line.get(875+idx))); //pp2fFraction
-            pstmt.setDouble(22, getDouble(line.get(895+idx))); //pp4fFraction
-            pstmt.setDouble(23, getDouble(line.get(915+idx))); //pp6fFraction
-            pstmt.setDouble(24, getDouble(line.get(935+idx))); //pp8fFraction
-            pstmt.setDouble(25, getDouble(line.get(945+idx))); //pp10fFraction
-            pstmt.setDouble(26, getDouble(line.get(955+idx))); //pp12fFraction
-            pstmt.setDouble(27, getDouble(line.get(965+idx))); //pp14fFraction
-            pstmt.setDouble(28, getDouble(line.get(975+idx))); //pp16fFraction
-            pstmt.setString(29, line.get(1065+idx));           //jockey
-            pstmt.setString(30, line.get(1086+idx));           //raceType
+            pstmt.setInt   (1, getInt(line.get(2)) * 1000 + getInt(line.get(3))*10 + ppRace); //race*1000 + postPos*100 + index
+            pstmt.setInt   (2, ppRace);                           //which past race/index
+            pstmt.setInt   (3, getInt(line.get(2)));              //race 
+            pstmt.setInt   (4, getInt(line.get(3)));              //today's postPos
+            pstmt.setString(5, line.get(255+ppRace));             //date
+            pstmt.setString(6, line.get(275+ppRace));             //track
+            pstmt.setInt   (7, getInt(line.get(315+ppRace)));     //distance
+            pstmt.setString(8, line.get(325+ppRace));             //surface);
+            pstmt.setInt   (9, getInt(line.get(355+ppRace)));     //postPos
+            pstmt.setInt   (10, getInt(line.get(545+ppRace)));    //claimingPrice
+            pstmt.setInt   (11, getInt(line.get(555+ppRace)));    //purse
+            pstmt.setString(12, line.get(575+ppRace));            //pp1stCallPos
+            pstmt.setString(13, line.get(585+ppRace));            //pp2ndCallPos
+            pstmt.setString(14, line.get(595+ppRace));            //gateCallPos
+            pstmt.setString(15, line.get(605+ppRace));            //stretchPos
+            pstmt.setString(16, line.get(615+ppRace));            //finishPos
+            pstmt.setString(17, line.get(665+ppRace));            //pp1stCallBtn
+            pstmt.setString(18, line.get(685+ppRace));            //pp2ndCallBtn
+            pstmt.setString(19, line.get(725+ppRace));            //stretchBtn
+            pstmt.setString(20, line.get(745+ppRace));            //finishBtn
+            pstmt.setDouble(21, getDouble(line.get(875+ppRace))); //pp2fFraction
+            pstmt.setDouble(22, getDouble(line.get(895+ppRace))); //pp4fFraction
+            pstmt.setDouble(23, getDouble(line.get(915+ppRace))); //pp6fFraction
+            pstmt.setDouble(24, getDouble(line.get(935+ppRace))); //pp8fFraction
+            pstmt.setDouble(25, getDouble(line.get(945+ppRace))); //pp10fFraction
+            pstmt.setDouble(26, getDouble(line.get(955+ppRace))); //pp12fFraction
+            pstmt.setDouble(27, getDouble(line.get(965+ppRace))); //pp14fFraction
+            pstmt.setDouble(28, getDouble(line.get(975+ppRace))); //pp16fFraction
+            pstmt.setString(29, line.get(1065+ppRace));           //jockey
+            pstmt.setString(30, line.get(1086+ppRace));           //raceType
             pstmt.executeUpdate();
 
         } catch (SQLException e) {
