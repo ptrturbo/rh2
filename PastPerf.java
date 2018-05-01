@@ -47,21 +47,25 @@ public class PastPerf {
 	private String[] ppTrainer     = new String[10];
 	private String[] ppRaceType    = new String[10];
 
-	public String[] getJockey() {
+	public String[] jockey() {
 		return ppJockey;
 	}
 
-	public String[] getRaceType() {
+	public String[] raceType() {
 		return ppRaceType;
 	}
 
-	public int[] getPurse() {
+	public int[] purse() {
 		return ppPurse;
 	}
 
-	public int[] getHighClaimingPrice() {
+	public int[] highClaimingPrice() {
 		return ppHighClaimingPrice;
 	}
+
+    public int[] distance() {
+        return ppDistance;
+    }
 
 /*
  * Has Raced Before
@@ -617,43 +621,56 @@ public class PastPerf {
         return fastestFraction;
     }
 
-
+/*
+	public PastPerf (Connection conn, int raceNum, int todaysPostPos) {
+        String sql = "SELECT race, todaysPostPos, ppRace, distance " +
+                     "FROM t_last10 WHERE race = 1 and todaysPostPos = 1"; 
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                ResultSet rs = pstmt.executeQuery();
+    
+                while (rs.next()) {
+                    System.out.println(rs.getInt("race") + " " + rs.getInt("todaysPostPos") + " " + rs.getInt("ppRace") + " " + rs.getInt("distance"));
+                }
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+*/
 /*
  * Constructor
  */
-	public PastPerf (Connection conn, int raceNum, int postPos) {
-        String sql = "SELECT ppRaceDate, ppTrack, ppDistance, ppSurface, ppOdds, " +
-                     "ppPurse, pp1stCallPos, pp2ndCallPos, ppGateCallPos, ppStretchPos, ppFinishPos, " +
-                     "pp1stCallBtn, pp2ndCallBtn, ppStretchBtn, ppFinishBtn, ppSpeedRating, " +
+	public PastPerf (Connection conn, int raceNum, int todaysPostPos) {
+        String sql = "SELECT date, track, distance, surface, odds, " +
+                     "purse, pp1stCallPos, pp2ndCallPos, gateCallPos, stretchPos, finishPos, " +
+                     "pp1stCallBtn, pp2ndCallBtn, stretchBtn, finishBtn, speedRating, " +
                      "pp2fFraction, pp4fFraction, pp6fFraction, pp8fFraction, pp10fFraction, " +
-                     "pp12fFraction, pp14fFraction, pp16fFraction, ppFinalTime, ppJockey, " +
-                     "ppRaceType, ppHighClaimingPrice " +
-                     "FROM t_last10 WHERE race = ? and postPos = ? and ppRace = ?"; 
+                     "pp12fFraction, pp14fFraction, pp16fFraction, finalTime, jockey, " +
+                     "raceType, highClaimingPrice " +
+                     "FROM t_last10 WHERE race = ? and todaysPostPos = ? and ppRace = ?"; 
         for (int ppRace=0; ppRace<10; ppRace++) {
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 pstmt.setInt (1, raceNum);
-                pstmt.setInt (2, postPos);
+                pstmt.setInt (2, todaysPostPos);
                 pstmt.setInt (3, ppRace);
                 ResultSet rs = pstmt.executeQuery();
     
                 while (rs.next()) {
-                    this.ppTrainer[ppRace]           = rs.getString("trainer");
-                    this.ppRaceDate[ppRace]          = rs.getInt("ppRaceDate");
-                    this.ppTrack[ppRace]             = rs.getString("ppTrack");
-                    this.ppDistance[ppRace]          = rs.getInt("ppDistance");
-                    this.ppSurface[ppRace]           = rs.getString("ppSurface");
-                    this.ppOdds[ppRace]              = rs.getDouble("ppOdds");
-                    this.ppPurse[ppRace]             = rs.getInt("ppPurse");
+                    this.ppRaceDate[ppRace]          = rs.getInt("date");
+                    this.ppTrack[ppRace]             = rs.getString("track");
+                    this.ppDistance[ppRace]          = rs.getInt("distance");
+                    this.ppSurface[ppRace]           = rs.getString("surface");
+                    this.ppOdds[ppRace]              = rs.getDouble("odds");
+                    this.ppPurse[ppRace]             = rs.getInt("purse");
                     this.pp1stCallPos[ppRace]        = rs.getString("pp1stCallPos");
                     this.pp2ndCallPos[ppRace]        = rs.getString("pp2ndCallPos");
-                    this.ppGateCallPos[ppRace]       = rs.getString("ppGateCallPos");
-                    this.ppStretchPos[ppRace]        = rs.getString("ppStretchCallPos");
-                    this.ppFinishPos[ppRace]         = rs.getString("ppFinishPos");
+                    this.ppGateCallPos[ppRace]       = rs.getString("gateCallPos");
+                    this.ppStretchPos[ppRace]        = rs.getString("stretchPos");
+                    this.ppFinishPos[ppRace]         = rs.getString("finishPos");
                     this.pp1stCallBtn[ppRace]        = rs.getDouble("pp1stCallBtn");
                     this.pp2ndCallBtn[ppRace]        = rs.getDouble("pp2ndCallBtn");
-                    this.ppStretchBtn[ppRace]        = rs.getDouble("ppStretchBtn");
-                    this.ppFinishBtn[ppRace]         = rs.getDouble("ppFinishBtn");
-                    this.ppSpeedRating[ppRace]       = rs.getInt("SpeedRating");
+                    this.ppStretchBtn[ppRace]        = rs.getDouble("stretchBtn");
+                    this.ppFinishBtn[ppRace]         = rs.getDouble("finishBtn");
+                    this.ppSpeedRating[ppRace]       = rs.getInt("speedRating");
                     this.pp2fFraction[ppRace]        = rs.getDouble("pp2fFraction");
                     this.pp4fFraction[ppRace]        = rs.getDouble("pp4fFraction");
                     this.pp6fFraction[ppRace]        = rs.getDouble("pp6fFraction");
@@ -662,10 +679,10 @@ public class PastPerf {
                     this.pp12fFraction[ppRace]       = rs.getDouble("pp12fFraction");
                     this.pp14fFraction[ppRace]       = rs.getDouble("pp14fFraction");
                     this.pp16fFraction[ppRace]       = rs.getDouble("pp16fFraction");
-                    this.ppFinalTime[ppRace]         = rs.getDouble("ppFinalTime");
-                    this.ppJockey[ppRace]            = rs.getString("Jockey");
-                    this.ppRaceType[ppRace]          = rs.getString("ppRaceType");
-                    this.ppHighClaimingPrice[ppRace] = rs.getInt("ppHighClaimingPrice");
+                    this.ppFinalTime[ppRace]         = rs.getDouble("finalTime");
+                    this.ppJockey[ppRace]            = rs.getString("jockey");
+                    this.ppRaceType[ppRace]          = rs.getString("raceType");
+                    this.ppHighClaimingPrice[ppRace] = rs.getInt("highClaimingPrice");
                 }
                 this.conn    = conn;
                 this.raceNum = raceNum;

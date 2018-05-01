@@ -85,11 +85,12 @@ public class SQLite {
             + " ppRace integer,\n"  
             + " race integer,\n"
             + " todaysPostPos integer,\n"
-            + " date text,\n"
+            + " date integer,\n"
             + " track text,\n"
             + " distance integer,\n"
             + " surface text,\n"
             + " postPos integer,\n"
+            + " odds real,\n"
             + " claimingPrice integer,\n"
             + " purse integer,\n"
             + " pp1stCallPos text,\n"
@@ -101,6 +102,7 @@ public class SQLite {
             + " pp2ndCallBtn real,\n"
             + " stretchBtn real,\n"
             + " finishBtn real,\n"
+            + " speedRating integer,\n"
             + " pp2fFraction real,\n"
             + " pp4fFraction real,\n"
             + " pp6fFraction real,\n"
@@ -109,8 +111,10 @@ public class SQLite {
             + " pp12fFraction real,\n"
             + " pp14fFraction real,\n"
             + " pp16fFraction real,\n"
+            + " finalTime real,\n"
             + " jockey text,\n"
-            + " raceType text\n"
+            + " raceType text,\n"
+            + " highClaimingPrice integer\n"
             + ");";
 
         try {
@@ -232,7 +236,7 @@ public class SQLite {
             pstmt.setInt   (3, getInt(line.get(1)));     //date
             pstmt.setInt   (4, getInt(line.get(2)));     //race 
             pstmt.setInt   (5, getInt(line.get(3)));     //postPos
-            pstmt.setInt   (6, getInt(line.get(5)));     //distance
+            pstmt.setInt   (6, Math.abs(getInt(line.get(5))));     //distance
             pstmt.setString(7, line.get(6));             //surface);
             pstmt.setString(8, line.get(8));             //raceType
             pstmt.setInt   (9, getInt(line.get(11)));    //purse
@@ -324,44 +328,49 @@ public class SQLite {
      */
     public static void insertLast10 (Connection conn, List<String> line, int ppRace) {
         String sql = "INSERT INTO t_last10 (id, ppRace, race, todaysPostPos, date, " +
-                     "track, distance, surface, postPos, claimingPrice, purse, " +
+                     "track, distance, surface, postPos, odds, claimingPrice, purse, " +
                      "pp1stCallPos, pp2ndCallPos, gateCallPos, stretchPos, finishPos, " +
-                     "pp1stCallBtn, pp2ndCallBtn, stretchBtn, finishBtn, pp2fFraction, " +
-                     "pp4fFraction, pp6fFraction, pp8fFraction, pp10fFraction, pp12fFraction, " +
-                     "pp14fFraction, pp16fFraction, jockey, raceType) " +
-                     "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                     "pp1stCallBtn, pp2ndCallBtn, stretchBtn, finishBtn, speedRating, " +
+                     "pp2fFraction, pp4fFraction, pp6fFraction, pp8fFraction, pp10fFraction, " +
+                     "pp12fFraction, pp14fFraction, pp16fFraction, finalTime, jockey, raceType, " +
+                     "highClaimingPrice) " +
+                     "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt   (1, getInt(line.get(2)) * 1000 + getInt(line.get(3))*10 + ppRace); //race*1000 + postPos*100 + index
             pstmt.setInt   (2, ppRace);                           //which past race/index
             pstmt.setInt   (3, getInt(line.get(2)));              //race 
             pstmt.setInt   (4, getInt(line.get(3)));              //today's postPos
-            pstmt.setString(5, line.get(255+ppRace));             //date
+            pstmt.setInt   (5, getInt(line.get(255+ppRace)));     //date
             pstmt.setString(6, line.get(275+ppRace));             //track
-            pstmt.setInt   (7, getInt(line.get(315+ppRace)));     //distance
+            pstmt.setInt   (7, Math.abs(getInt(line.get(315+ppRace))));     //distance
             pstmt.setString(8, line.get(325+ppRace));             //surface);
             pstmt.setInt   (9, getInt(line.get(355+ppRace)));     //postPos
-            pstmt.setInt   (10, getInt(line.get(545+ppRace)));    //claimingPrice
-            pstmt.setInt   (11, getInt(line.get(555+ppRace)));    //purse
-            pstmt.setString(12, line.get(575+ppRace));            //pp1stCallPos
-            pstmt.setString(13, line.get(585+ppRace));            //pp2ndCallPos
-            pstmt.setString(14, line.get(595+ppRace));            //gateCallPos
-            pstmt.setString(15, line.get(605+ppRace));            //stretchPos
-            pstmt.setString(16, line.get(615+ppRace));            //finishPos
-            pstmt.setString(17, line.get(665+ppRace));            //pp1stCallBtn
-            pstmt.setString(18, line.get(685+ppRace));            //pp2ndCallBtn
-            pstmt.setString(19, line.get(725+ppRace));            //stretchBtn
-            pstmt.setString(20, line.get(745+ppRace));            //finishBtn
-            pstmt.setDouble(21, getDouble(line.get(875+ppRace))); //pp2fFraction
-            pstmt.setDouble(22, getDouble(line.get(895+ppRace))); //pp4fFraction
-            pstmt.setDouble(23, getDouble(line.get(915+ppRace))); //pp6fFraction
-            pstmt.setDouble(24, getDouble(line.get(935+ppRace))); //pp8fFraction
-            pstmt.setDouble(25, getDouble(line.get(945+ppRace))); //pp10fFraction
-            pstmt.setDouble(26, getDouble(line.get(955+ppRace))); //pp12fFraction
-            pstmt.setDouble(27, getDouble(line.get(965+ppRace))); //pp14fFraction
-            pstmt.setDouble(28, getDouble(line.get(975+ppRace))); //pp16fFraction
-            pstmt.setString(29, line.get(1065+ppRace));           //jockey
-            pstmt.setString(30, line.get(1086+ppRace));           //raceType
+            pstmt.setDouble(10, getDouble(line.get(515+ppRace))); //odds
+            pstmt.setInt   (11, getInt(line.get(545+ppRace)));    //claimingPrice
+            pstmt.setInt   (12, getInt(line.get(555+ppRace)));    //purse
+            pstmt.setString(13, line.get(575+ppRace));            //pp1stCallPos
+            pstmt.setString(14, line.get(585+ppRace));            //pp2ndCallPos
+            pstmt.setString(15, line.get(595+ppRace));            //gateCallPos
+            pstmt.setString(16, line.get(605+ppRace));            //stretchPos
+            pstmt.setString(17, line.get(615+ppRace));            //finishPos
+            pstmt.setString(18, line.get(665+ppRace));            //pp1stCallBtn
+            pstmt.setString(19, line.get(685+ppRace));            //pp2ndCallBtn
+            pstmt.setString(20, line.get(725+ppRace));            //stretchBtn
+            pstmt.setString(21, line.get(745+ppRace));            //finishBtn
+            pstmt.setInt   (22, getInt(line.get(845+ppRace)));    //speedRating
+            pstmt.setDouble(23, getDouble(line.get(875+ppRace))); //pp2fFraction
+            pstmt.setDouble(24, getDouble(line.get(895+ppRace))); //pp4fFraction
+            pstmt.setDouble(25, getDouble(line.get(915+ppRace))); //pp6fFraction
+            pstmt.setDouble(26, getDouble(line.get(935+ppRace))); //pp8fFraction
+            pstmt.setDouble(27, getDouble(line.get(945+ppRace))); //pp10fFraction
+            pstmt.setDouble(28, getDouble(line.get(955+ppRace))); //pp12fFraction
+            pstmt.setDouble(29, getDouble(line.get(965+ppRace))); //pp14fFraction
+            pstmt.setDouble(30, getDouble(line.get(975+ppRace))); //pp16fFraction
+            pstmt.setDouble(31, getDouble(line.get(1035+ppRace)));//finalTime
+            pstmt.setString(32, line.get(1065+ppRace));           //jockey
+            pstmt.setString(33, line.get(1085+ppRace));           //raceType
+            pstmt.setInt   (34, getInt(line.get(1211+ppRace)));   //highClaimingPrice
             pstmt.executeUpdate();
 
         } catch (SQLException e) {

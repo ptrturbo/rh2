@@ -18,7 +18,7 @@ public class Raceday{
 		return track;
 	}
 
-	public int getDate() {
+	public int today() {
 		return date;
 	}
 

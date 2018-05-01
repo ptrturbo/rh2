@@ -20,7 +20,6 @@ public class B {
 		int	currRace = 0;
         int postPos = 0;
         int lStarts = 0;
-        int today = 0;
         String jockey = "";
         double[] fastestFraction = new double[2];
 
@@ -36,7 +35,7 @@ public class B {
         SQLite.loadCSV(conn, csvFile);
 
         Raceday raceDay = new Raceday (conn);
-        System.out.println ("Racing on " + raceDay.getDate() + " at " + raceDay.getTrack());	
+        System.out.println ("Racing on " + raceDay.today() + " at " + raceDay.getTrack());	
 
         // For every race
         for (raceNum=1; raceNum<=raceDay.maxRace(); raceNum++) {
@@ -50,11 +49,33 @@ public class B {
 
             // for every post position in the race
             for (postPos=1; postPos<=race.maxPost(); postPos++) {
+                System.out.println("Post " + postPos);
                 Horse horse = new Horse(conn, raceNum, postPos);
 
-                for (int histRace=1; histRace<=horse.maxHist(); histRace++) {
-                    PastPerf pp = new PastPerf(conn, raceNum, postPos, histRace);
-                } // for histRace ... maxHist
+                PastPerf pp = new PastPerf(conn, raceNum, postPos);
+
+                int    steppingUpInClass = AlgoUtils.steppingUpInClass(race.raceType(), pp.raceType()[0],
+                                           race.purse(), pp.purse()[0],
+                                           race.claimingPrice(), pp.highClaimingPrice()[0]);
+                boolean canDoTodaysClass  = pp.canDo(raceDay.today(), race.raceType(), race.purse(), race.claimingPrice(), "Today");
+                boolean canDoPastClass    = pp.canDo(raceDay.today(), race.raceType(), race.purse(), race.claimingPrice(), "Past");
+
+	            if (steppingUpInClass > 0) {
+		            System.out.println("      Stepping Up in Class by " + steppingUpInClass + 
+                                    "  Race Type=" + race.raceType() + "  Prior Type=" + pp.raceType()[0]);
+	            }
+                else if (steppingUpInClass < 0) {
+		            System.out.println("      Dropping Down in Class by " + steppingUpInClass + 
+                                    "  Race Type=" + race.raceType() + "  Prior Type=" + pp.raceType()[0]);
+	            }
+
+                if (canDoTodaysClass) {
+                    System.out.println("    Can do today's class");
+                }
+
+                if (canDoPastClass) {
+                    System.out.println("    Can do past class");
+                }
 
             } // for postPos ... maxPostPos
 
