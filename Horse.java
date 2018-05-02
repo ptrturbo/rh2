@@ -25,51 +25,51 @@ public class Horse {
 	private int lStarts;
     private int raceNum;
 
-	public String getTrainer() {
+	public String trainer() {
 		return trainer;
 	}
 
-	public int getTrainerSts() {
+	public int trainerSts() {
 		return trainerSts;
 	}
 
-	public int getTrainerWins() {
+	public int trainerWins() {
 		return trainerWins;
 	}
 
-	public String getJockey() {
+	public String jockey() {
 		return jockey;
 	}
 
-	public int getJockeySts() {
+	public int jockeySts() {
 		return jockeySts;
 	}
 
-	public int getJockeyWins() {
+	public int jockeyWins() {
 		return jockeyWins;
 	}
 
-	public String getName() {
+	public String name() {
 		return name;
 	}
 
-	public int getTStarts() {
+	public int tStarts() {
 		return tStarts;
 	}
 
-	public int getTWins() {
+	public int tWins() {
 		return tWins;
 	}
 
-	public int getTPlaces() {
+	public int tPlaces() {
 		return tPlaces;
 	}
 
-	public int getTShows() {
+	public int tShows() {
 		return tShows;
 	}
 
-	public int getLStarts() {
+	public int lStarts() {
 		return lStarts;
 	}
 
@@ -80,7 +80,7 @@ public class Horse {
 /*
  * Rate the quality of the horse for turf races
  */ 
-    public String getTurfBet () {
+    public String turfBet () {
 	   String tWhat = "void";
        double winRatio = 0;
        double itmRatio = 0;
@@ -122,7 +122,7 @@ public class Horse {
 /*
  * How much in-the-money is this horse in a turf race
  */
-    public String getTurfMoney () {
+    public String turfMoney () {
 	    String inTheMoney = "T-InThe$No";
 	    double itmRate;
 	    if (tStarts > 0) { // Don't divide by zero

@@ -546,7 +546,6 @@ public class PastPerf {
             if ((speedRating[0] - speedRating[1]) >= 5 &&
                 (speedRating[1] - speedRating[2]) >= 5) {
                 trend = true;
-                System.out.println("Speed Rating Trend");
             }
         }
         return trend;
@@ -556,7 +555,7 @@ public class PastPerf {
  * Max Speed Rating 
  *   Return highest of three qualifying speed ratings
  */
-    public int getMaxSpeedRating(int today, String surface, int distance) {
+    public int maxSpeedRating(int today, String surface, int distance) {
         int[] speedRating = new int[3];
 
         speedRating = getSpeedRatings(today, surface, distance);

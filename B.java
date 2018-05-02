@@ -17,10 +17,8 @@ public class B {
         int maxRace = 0;
         int maxPost = 0;
         int maxHist = 0;
-		int	currRace = 0;
         int postPos = 0;
         int lStarts = 0;
-        String jockey = "";
         double[] fastestFraction = new double[2];
 
         // Create the in-memory database and tables
@@ -35,7 +33,7 @@ public class B {
         SQLite.loadCSV(conn, csvFile);
 
         Raceday raceDay = new Raceday (conn);
-        System.out.println ("Racing on " + raceDay.today() + " at " + raceDay.getTrack());	
+        System.out.println ("Racing on " + raceDay.today() + " at " + raceDay.track());	
 
         // For every race
         for (raceNum=1; raceNum<=raceDay.maxRace(); raceNum++) {
@@ -59,15 +57,39 @@ public class B {
                                            race.claimingPrice(), pp.highClaimingPrice()[0]);
                 boolean canDoTodaysClass  = pp.canDo(raceDay.today(), race.raceType(), race.purse(), race.claimingPrice(), "Today");
                 boolean canDoPastClass    = pp.canDo(raceDay.today(), race.raceType(), race.purse(), race.claimingPrice(), "Past");
+                
+                SQLite.insertFlags(conn, raceNum, postPos, 
+                        horse.turfBet(), 
+                        horse.turfMoney(), 
+                        pp.noSignOfLife(),
+                        pp.backToDirt(race.surface()), 
+                        pp.shorteningUp(race.distance()), 
+	                    pp.badDebutPost(race.isMaiden(), postPos),
+	                    pp.debutTooLong(race.isMaiden(), race.distance()),
+	                    pp.wellBacked(race.isMaiden()),
+	                    pp.triedTheDist(race.isMaiden(), race.distance()),
+	                    pp.tooManyChancesToWin(race.isMaiden(), horse.lStarts()),
+	                    pp.toughSurfaceForDebut(race.isMaiden(), race.isTurf()),
+	                    pp.fromTopClassToMaidens(race.isMaiden()),
+	                    pp.fromStraightMdnToClaimersStrong(race.raceType()),
+	                    pp.fromStraightMdnToClaimersWeak(race.raceType()),
+	                    horse.topTrainer(),
+	                    horse.poorTrainer(),
+	                    horse.topJockey(),
+	                    horse.poorJockey(),
+                        steppingUpInClass,
+                        canDoTodaysClass,
+                        canDoPastClass,
+                        pp.isSharp(raceDay.today()),
+                        pp.isDroppingInToLowerCircuit(raceDay.track()),
+                        pp.isShippingToHigherCircuit(raceDay.track()),
+                        pp.hasSpeedRatingTrend(raceDay.today(), race.surface(), race.distance()),
+                        pp.maxSpeedRating(raceDay.today(), race.surface(), race.distance()));
 
-	            if (steppingUpInClass > 0) {
-		            System.out.println("      Stepping Up in Class by " + steppingUpInClass + 
-                                    "  Race Type=" + race.raceType() + "  Prior Type=" + pp.raceType()[0]);
-	            }
-                else if (steppingUpInClass < 0) {
-		            System.out.println("      Dropping Down in Class by " + steppingUpInClass + 
-                                    "  Race Type=" + race.raceType() + "  Prior Type=" + pp.raceType()[0]);
-	            }
+                fastestFraction = pp.getFastestFractions(raceDay.today(), race.surface(), race.distance());
+
+                SQLite.insertHistory(conn, raceNum, postPos, pp.jockey()[0], fastestFraction[0], fastestFraction[1]);
+
 
                 if (canDoTodaysClass) {
                     System.out.println("    Can do today's class");
@@ -76,6 +98,85 @@ public class B {
                 if (canDoPastClass) {
                     System.out.println("    Can do past class");
                 }
+
+                System.out.println ("Turf Bet " + horse.turfBet());
+                System.out.println ("Turf Money " + horse.turfMoney());
+                if (pp.noSignOfLife()) {
+                    System.out.println("No Sign of Life");
+                }
+                if (pp.backToDirt(race.surface())) {
+                    System.out.println("Back to Dirt");
+                }
+                if (pp.shorteningUp(race.distance())) {
+                    System.out.println("Shortening Up");
+                }
+                if (pp.badDebutPost(race.isMaiden(), postPos)) {
+                    System.out.println("Bad Debut Post Up");
+                }
+                if (pp.debutTooLong(race.isMaiden(), race.distance())) {
+                    System.out.println("Debut Too Long");
+                }
+                if (pp.wellBacked(race.isMaiden() )) {
+                    System.out.println("Well Backed");
+                }
+                if (pp.triedTheDist(race.isMaiden(), race.distance() )) {
+                    System.out.println("Tried the Distance");
+                }
+                if (pp.tooManyChancesToWin(race.isMaiden(), horse.lStarts() )) {
+                    System.out.println("Too Many Chances to Win");
+                }
+                if (pp.toughSurfaceForDebut(race.isMaiden(), race.isTurf() )) {
+                    System.out.println("Tough Surface for Debut");
+                }
+                if (pp.fromTopClassToMaidens(race.isMaiden() )) {
+                    System.out.println("From Top Class to Maidens");
+                }
+                if (pp.fromStraightMdnToClaimersStrong(race.raceType() )) {
+                    System.out.println("From Straight Maiden to Claimers Strong");
+                }
+                if (pp.fromStraightMdnToClaimersWeak(race.raceType() )) {
+                    System.out.println("From Straight Maiden to Claimers Weak");
+                }
+                if (horse.topTrainer()) {
+                    System.out.println("Top Trainer");
+                }
+                if (horse.poorTrainer()) {
+                    System.out.println("Poor Trainer");
+                }
+                if (horse.topJockey()) {
+                    System.out.println("Top Jockey");
+                }
+                if (horse.poorJockey()) {
+                    System.out.println("Poor Jockey");
+                }
+	            if (steppingUpInClass > 0) {
+		            System.out.println("Stepping Up in Class");
+	            }
+                else if (steppingUpInClass < 0) {
+		            System.out.println("Dropping Down in Class");
+	            }
+                if (canDoTodaysClass) {
+                    System.out.println("Can do today's class");
+                }
+                if (canDoPastClass) {
+                    System.out.println("Can do past class");
+                }
+                if (pp.isSharp(raceDay.today())) {
+                    System.out.println("Sharp");
+                }
+                if (pp.isDroppingInToLowerCircuit(raceDay.track())) {
+                    System.out.println("Dropping into Lower Circuit");
+                }
+                if (pp.isShippingToHigherCircuit(raceDay.track())) {
+                    System.out.println("Shipping to Higher Circuit");
+                }
+                if (pp.hasSpeedRatingTrend(raceDay.today(), race.surface(), race.distance())) {
+                    System.out.println("Has Speed Rating Trend");
+                }
+                System.out.println("Max Speed Rating " + pp.maxSpeedRating(raceDay.today(), race.surface(), race.distance()));
+
+
+                
 
             } // for postPos ... maxPostPos
 

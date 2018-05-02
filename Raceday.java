@@ -14,7 +14,7 @@ public class Raceday{
 	private int    date;
     private Connection conn;
 
-	public String getTrack() {
+	public String track() {
 		return track;
 	}
 
