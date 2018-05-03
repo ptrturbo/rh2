@@ -64,6 +64,121 @@ public class Race{
         return turf;
     }
 
+/*
+ * Get three best speed rated horses
+ */
+    public void speedRatingRank() {
+        int[] speedRatings = new int[maxPost()];
+        int[] postPos = new int[maxPost()];
+        int tempr;
+        int temph;
+
+        speedRatings = SQLite.getBestSpeedRating(conn, raceNum);
+        for (int i=0; i<maxPost(); i++) {
+            postPos[i] = i+1;
+        }
+        
+        //Sort the two lists
+        for (int i=1; i<maxPost(); i++) {
+            for (int k=i; k>0 && speedRatings[k-1]>speedRatings[k]; k--) {
+                tempr = speedRatings[k];
+                temph = postPos[k];
+                speedRatings[k] = speedRatings[k-1];
+                postPos[k] = postPos[k-1];
+                speedRatings[k-1] = tempr;
+                postPos[k-1] = temph;
+            }
+        }
+
+        for (int i=maxPost()-1; i>maxPost()-4; i--) {
+            System.out.println("Speed:" + speedRatings[i] + "  PostPos:" + postPos[i]);
+            //SQLite.insertSpeedRatingRank(conn, raceNum, speedRatings, postPos);
+        }
+    }
+
+
+/*
+ * Get Jockey Choice Plus and Minus
+ */
+    public void jockeyChoice() {
+
+        String[] currJockey  = new String[maxPost()];
+        String[] priorJockey = new String[maxPost()];
+        boolean jockeyChoicePlus;
+        boolean jockeyChoiceMinus;
+        int jockeyMatch = 0;
+
+        //Get list of jockies for this race
+        currJockey = SQLite.getCurrentJockies(conn, raceNum);
+
+        //Get list of prior race jockies
+        priorJockey = SQLite.getPriorJockies(conn, raceNum);
+        
+        for (int postPos=0; postPos<maxPost(); postPos++) {
+            jockeyMatch = 0;
+            
+            // How many of today's horses has today's jockey ridden in prior races
+            for (int j=0; j<maxPost(); j++) {
+                if (currJockey[postPos].equals(priorJockey[j])) {
+                    jockeyMatch++;
+                }
+            }
+
+            if (jockeyMatch > 1) { //if had ridden 2 or more prior horses
+                jockeyChoicePlus = false;
+                jockeyChoiceMinus = false;
+
+                if (currJockey[postPos].equals(priorJockey[postPos])) { // if today's jockey was this horse's prior jockey
+                    jockeyChoicePlus = true;
+                    System.out.println("Plus " + (postPos+1));
+                    SQLite.updateJockeyChoice (conn, raceNum, postPos, jockeyChoicePlus, jockeyChoiceMinus);
+
+                    for (int pPos=0; pPos<maxPost(); pPos++) { 
+                        if (currJockey[postPos].equals(priorJockey[pPos]) && (postPos != pPos)) { 
+                            jockeyChoiceMinus = true;
+                    System.out.println("Minus " + (pPos+1));
+                            SQLite.updateJockeyChoice (conn, raceNum, pPos, jockeyChoicePlus, jockeyChoiceMinus);
+                        }
+                    }
+                }
+            }
+        }
+    } //jockeyChoice
+
+/*
+ * Find any horse that has early speed calculations (fastest fractions)
+ *  that are at least 0.6 seconds faster than any other horse in its race.
+ *  Must have fractions for at least 50% of horses in the race.
+ */
+    public void loneF() {
+        double[][] fractions = new double[2][maxPost()];
+        double[] fastest = {100.0, 100.0};
+        double[] second  = {100.0, 100.0};
+        int validHorses = 0;
+        int fastHorse = 0;;
+
+        //Find the fastest and second fastest times
+        fractions = SQLite.getFractions(conn, raceNum, maxPost());
+        for (int postPos=0; postPos<maxPost(); postPos++) {
+            if (fractions[1][postPos] < 999.0) {
+                validHorses++;
+            }
+            if (fractions[0][postPos] < fastest[0]) {
+                for (int i=0; i<2; i++) {
+                    second[i] = fastest[i];
+                    fastest[i] = fractions[i][postPos];
+                    fastHorse = i;
+                }
+            }
+        }
+
+        if (validHorses >= maxPost()/2) {
+            if (fastest[0] - second[0] >= 0.6) {
+                System.out.format("Lone F - horse %d  %.1f  %.1f %n", (fastHorse+1), fastest[0], fastest[1]);
+            }
+        }
+    } //loneF
+
     /*
      * Constructor
      */

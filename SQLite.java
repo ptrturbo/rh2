@@ -186,6 +186,8 @@ public class SQLite {
             + " priorJockey text,\n"
             + " fastestFraction1 double,\n"
             + " fastestFraction2 double\n"
+            + " speedRatingRank int\n"
+            + " speedRatingSpeed int\n"
             + ");";
             
 
@@ -383,8 +385,8 @@ public class SQLite {
      */
     public static void insertHistory (Connection conn, int race, int postPos, 
             String priorJockey, double fastestFraction1,  double fastestFraction2) {
-        String sql = "INSERT INTO t_history (id, race, postPos, priorJockey, fastestFraction1, fastestFraction2) " +
-                     "VALUES (?,?,?,?,?,?)";
+        String sql = "INSERT INTO t_history (id, race, postPos, priorJockey, fastestFraction1, fastestFraction2, speedRatingRank, speedRatingSpeed) " +
+                     "VALUES (?,?,?,?,?,?,?,?)";
 
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
@@ -394,6 +396,8 @@ public class SQLite {
             pstmt.setString(4, priorJockey);
             pstmt.setDouble(5, fastestFraction1);
             pstmt.setDouble(6, fastestFraction2);
+            pstmt.setDouble(7, 0);
+            pstmt.setDouble(8, 0);
             pstmt.executeUpdate();
 
         } catch (SQLException e) {

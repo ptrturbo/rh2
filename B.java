@@ -90,7 +90,14 @@ public class B {
 
                 SQLite.insertHistory(conn, raceNum, postPos, pp.jockey()[0], fastestFraction[0], fastestFraction[1]);
 
-
+                double[] closingKick = pp.getBestClosingKick(raceDay.today(), race.surface(), race.distance()); 
+/*
+                if (closingKick[0] != 999.0) {
+                    System.out.format("Closing Kick %.1f%n",  closingKick[0]);
+                }
+                if (closingKick[1] != 999.0) {
+                    System.out.format("Normalized Closing Kick %.1f%n",  closingKick[1]);
+                }
                 if (canDoTodaysClass) {
                     System.out.println("    Can do today's class");
                 }
@@ -174,11 +181,17 @@ public class B {
                     System.out.println("Has Speed Rating Trend");
                 }
                 System.out.println("Max Speed Rating " + pp.maxSpeedRating(raceDay.today(), race.surface(), race.distance()));
-
+*/
 
                 
 
             } // for postPos ... maxPostPos
+
+            race.speedRatingRank();
+
+            race.jockeyChoice();
+
+            race.loneF();
 
         } // for raceNum ... maxRace
     }
